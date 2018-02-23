@@ -3,50 +3,62 @@ pragma solidity ^0.4.11;
 import './IERC20.sol';
 import './SafeMath.sol';
 
-contract TrUST is IERC20 {
+/**  
+* @title UST Token for ICO Purpose
+* @author Narendranath Reddy
+* @notice YThis is USTGlobal Property 
+* @dev All function calls are currently implement without side effects
+*/ 
+contract UST is IERC20 {
     
     using SafeMath for uint256;
     uint _totalSupply = 0;
-	string public constant symbol = "TrUST";
-	string public constant name = "TrUST coin";
+	string public constant symbol = "UST";
+	string public constant name = "UST Token";
 	uint8 public constant decimals = 18;
 	
-	// 1 ether = 10 TrUST Tokens
+	/// @notice  1 ether = 10 UST Tokens
 	uint public constant RATE = 10;
 	
+	/// @notice All Ether will be transfered to Owner who creates this UST Token.
 	address public owner;
 	
 	mapping(address => uint256) balances;
 	mapping(address => mapping(address => uint256)) allowed;
 	
-	function () payable {
+	/// @notice The nameless function above is what in Solidity is called the fallback function..
+	function () payable {    /// @notice It is a fall back function without having a name. 
 	    
 	    createTokens();
 	}
 	
+	/// @param  msg.sender means who deploy this contract with Ethereum public address. 
 	function UstToken(){
 	    
 	    owner = msg.sender;
 	}
 	
+	/// @param _totalSupply Get the total token supply
 	function totalSupply() constant returns (uint256 totalsupply) {
 	    return _totalSupply;
 	}
-    
+    /// @param RATE We pass ether so multiply with RATE result the value of our UST COin
     function createTokens() payable {
         require(msg.value > 0);
         
         uint256 tokens = msg.value.mul(RATE);
         balances[msg.sender] = balances[msg.sender].add(tokens);
         _totalSupply = _totalSupply.add(tokens);
-        owner.transfer(msg.value);
+        owner.transfer(msg.value);   //Transfer the ether received from client to owner of the contract.
     }
-
+    
+    /// @param Get the account balance of another account with address _owner
 	function balanceOf(address _owner) constant returns (uint256 balance) {
 	    return balances[_owner];
 	}
 
-
+    
+    /// @param Send _value amount of tokens to address _to
     function transfer(address _to, uint256 _value) returns (bool success) {
           require (
               balances[msg.sender] >= _value 
@@ -58,6 +70,7 @@ contract TrUST is IERC20 {
               return true;
       }
  
+    /// @param Send _value amount of tokens from address _from to address _to
 	function transferFrom(address _from, address _to, uint256 _value) returns (bool success){
 	     require( 
     	     allowed[_from][msg.sender] >= _value
@@ -67,26 +80,26 @@ contract TrUST is IERC20 {
 	     balances[_from] =balances[_from].sub( _value);
 	     balances[_to] =balances[_to].add(_value);
 	     allowed[_from][msg.sender] =allowed[_from][msg.sender].sub( _value);
-	     Transfer(_from, _to, _value);
+	     Transfer(_from, _to, _value);        //An Event will be Logged 
 	     return true;
 	}
 
-
+    /// @param Allow _spender to withdraw from your account, multiple times, up to the _value amount. If this function is called again it overwrites the current allowance with _value.
 	function approve(address _spender, uint256 _value) returns (bool success){
 	     allowed[msg.sender][_spender] = _value;
-	     Approval(msg.sender, _spender, _value);
+	     Approval(msg.sender, _spender, _value); //An Event will be Logged 
 	     return true;
 	}
 
-
+    /// @param Returns the amount which _spender is still allowed to withdraw from _owner
 	function allowance(address _owner, address _spender) constant returns (uint256 remaining){
 	    return allowed[_owner][_spender];
 	}
 
-
+    /// @notice Triggered when tokens are transferred.
 	event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-
+    /// @notice Triggered whenever approve(address _spender, uint256 _value) is called.
 	event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
 
